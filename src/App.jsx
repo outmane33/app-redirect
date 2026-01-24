@@ -2,166 +2,149 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 export default function App() {
-  const [userChoice, setUserChoice] = useState(null); // null, 'browser', 'continue'
-  const [countdown, setCountdown] = useState(5);
-  const targetUrl = import.meta.env.VITE_SITE_URL || "https://www.google.com";
+  const [showPrompt, setShowPrompt] = useState(false);
+  const currentUrl = window.location.href; // Current page URL
 
-  // Enhanced detection
-  const detectBrowserType = () => {
-    const ua = navigator.userAgent.toLowerCase();
-
-    // Check for Telegram
-    if (ua.includes("telegram") || window.TelegramWebviewProxy !== undefined) {
-      return "telegram";
-    }
-
-    // Check for other in-app browsers
-    if (ua.includes("fbav") || ua.includes("fban")) return "facebook";
-    if (ua.includes("instagram")) return "instagram";
-    if (ua.includes("line")) return "line";
-    if (ua.includes("wechat")) return "wechat";
-
-    // Check if likely in-app browser by looking at window features
-    const isLikelyInApp =
-      !window.opener &&
-      window.navigator.standalone === false &&
-      !/safari/i.test(ua) &&
-      /mobile/i.test(ua);
-
-    if (isLikelyInApp) return "in-app";
-
-    return "normal";
-  };
-
-  const browserType = detectBrowserType();
-  const isInAppBrowser = browserType !== "normal";
-
-  // Countdown timer for auto-redirect
   useEffect(() => {
-    if (userChoice === "continue" && countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (userChoice === "continue" && countdown === 0) {
-      window.location.replace(targetUrl);
+    // Detect if we're in an in-app browser
+    const detectInAppBrowser = () => {
+      const ua = navigator.userAgent.toLowerCase();
+      const currentUrl = window.location.href;
+
+      // Check various in-app browser indicators
+      const isInApp =
+        ua.includes("telegram") ||
+        ua.includes("fbav") ||
+        ua.includes("fban") ||
+        ua.includes("instagram") ||
+        ua.includes("line") ||
+        ua.includes("wechat") ||
+        window.TelegramWebviewProxy !== undefined ||
+        // Additional check: if opened from another app
+        (document.referrer &&
+          !document.referrer.includes(window.location.hostname));
+
+      return isInApp;
+    };
+
+    // Check if in-app browser
+    if (detectInAppBrowser()) {
+      // Show prompt instead of redirecting
+      setShowPrompt(true);
+
+      // Try to trigger external browser immediately (works on some platforms)
+      const tryOpenExternal = () => {
+        // Method 1: Deep link intent (Android)
+        const intentUrl = `intent://${currentUrl.replace(/^https?:\/\//, "")}#Intent;scheme=https;end`;
+
+        // Create hidden link
+        const link = document.createElement("a");
+        link.href = currentUrl;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.style.display = "none";
+        document.body.appendChild(link);
+
+        // Try to open
+        link.click();
+
+        // Clean up
+        setTimeout(() => {
+          document.body.removeChild(link);
+        }, 100);
+
+        // Fallback to intent URL (Android)
+        setTimeout(() => {
+          window.location.href = intentUrl;
+        }, 300);
+      };
+
+      // Auto-try after 1 second
+      setTimeout(tryOpenExternal, 1000);
     }
-  }, [userChoice, countdown, targetUrl]);
+  }, []);
 
   const handleOpenInBrowser = () => {
-    // Try multiple methods to open in external browser
+    const currentUrl = window.location.href;
 
-    // Method 1: Intent URL for Android
-    const intentUrl = `intent://${targetUrl.replace(/^https?:\/\//, "")}#Intent;scheme=https;end`;
+    // Method 1: Standard target="_blank"
+    window.open(currentUrl, "_blank", "noopener,noreferrer");
 
-    // Method 2: Create link with target blank
-    const link = document.createElement("a");
-    link.href = targetUrl;
-    link.target = "_system"; // For some mobile browsers
-    link.rel = "noopener noreferrer";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    // Method 3: Try intent URL (Android)
+    // Method 2: Intent URL for Android
     setTimeout(() => {
+      const intentUrl = `intent://${currentUrl.replace(/^https?:\/\//, "")}#Intent;scheme=https;package=com.android.chrome;end`;
       window.location.href = intentUrl;
     }, 500);
+
+    // Method 3: Try direct location change
+    setTimeout(() => {
+      window.location.href = currentUrl;
+    }, 1000);
   };
 
   const handleCopyUrl = () => {
+    const currentUrl = window.location.href;
+
     navigator.clipboard
-      .writeText(targetUrl)
+      .writeText(currentUrl)
       .then(() => {
         alert(
-          "✓ URL copied!\n\nPaste it in:\n• Chrome\n• Safari\n• Firefox\n• Or any browser you prefer",
+          "✓ URL copied!\n\n" +
+            currentUrl +
+            "\n\nPaste it in Chrome, Safari, or any browser",
         );
       })
       .catch(() => {
         // Fallback for older browsers
         const textArea = document.createElement("textarea");
-        textArea.value = targetUrl;
+        textArea.value = currentUrl;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
         document.body.appendChild(textArea);
+        textArea.focus();
         textArea.select();
-        document.execCommand("copy");
+        try {
+          document.execCommand("copy");
+          alert("✓ URL copied!\n\n" + currentUrl);
+        } catch (err) {
+          alert("Please copy this URL manually:\n\n" + currentUrl);
+        }
         document.body.removeChild(textArea);
-        alert("✓ URL copied!");
       });
   };
 
-  const handleContinueAnyway = () => {
-    setUserChoice("continue");
-  };
-
-  // If normal browser, redirect immediately
-  if (!isInAppBrowser && userChoice === null) {
-    window.location.replace(targetUrl);
+  // If not in-app browser, show normal content
+  if (!showPrompt) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-      </div>
-    );
-  }
-
-  // Countdown screen
-  if (userChoice === "continue") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center">
-          <div className="mb-6">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-indigo-100 rounded-full">
-              <span className="text-4xl font-bold text-indigo-600">
-                {countdown}
-              </span>
+      <div className="app-container">
+        <div className="content-wrapper">
+          <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+            <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md">
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">
+                Welcome!
+              </h1>
+              <p className="text-gray-600">
+                You're viewing this page in a standard browser.
+              </p>
+              <p className="text-sm text-gray-500 mt-4 font-mono break-all">
+                {currentUrl}
+              </p>
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">
-            Redirecting...
-          </h2>
-          <p className="text-gray-600">
-            You will be redirected in {countdown} seconds
-          </p>
-          <button
-            onClick={() => window.location.replace(targetUrl)}
-            className="mt-6 text-indigo-600 hover:text-indigo-700 font-semibold underline"
-          >
-            Skip and redirect now
-          </button>
         </div>
       </div>
     );
   }
 
-  // Main prompt screen
+  // Show prompt for in-app browser users
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8">
-        {/* Warning Badge */}
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border-2 border-orange-200">
+        {/* Alert Icon */}
         <div className="flex justify-center mb-6">
-          <div className="bg-amber-100 rounded-full px-4 py-2 flex items-center gap-2">
+          <div className="bg-orange-100 rounded-full p-4 animate-pulse">
             <svg
-              className="w-5 h-5 text-amber-600"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span className="text-sm font-semibold text-amber-800">
-              {browserType === "telegram" && "Telegram Browser Detected"}
-              {browserType === "facebook" && "Facebook Browser Detected"}
-              {browserType === "instagram" && "Instagram Browser Detected"}
-              {browserType === "in-app" && "In-App Browser Detected"}
-            </span>
-          </div>
-        </div>
-
-        {/* Icon */}
-        <div className="flex justify-center mb-6">
-          <div className="bg-indigo-100 rounded-full p-4">
-            <svg
-              className="w-12 h-12 text-indigo-600"
+              className="w-16 h-16 text-orange-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -170,7 +153,7 @@ export default function App() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
               />
             </svg>
           </div>
@@ -178,60 +161,74 @@ export default function App() {
 
         {/* Title */}
         <h1 className="text-2xl font-bold text-gray-900 text-center mb-3">
-          Choose How to Continue
+          ⚠️ In-App Browser Detected
         </h1>
 
-        {/* Message */}
-        <p className="text-gray-600 text-center mb-6">
-          For the best experience and security, we recommend opening this page
-          in your default browser.
-        </p>
+        {/* Warning Message */}
+        <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4 mb-6">
+          <p className="text-orange-900 font-semibold mb-2">
+            🚨 This page must be opened in a real browser!
+          </p>
+          <p className="text-orange-800 text-sm">
+            You're currently viewing this in Telegram/Facebook's built-in
+            browser. Please open it in Chrome, Safari, Firefox, or your default
+            browser.
+          </p>
+        </div>
 
         {/* Instructions */}
-        <div className="bg-blue-50 rounded-lg p-4 mb-6">
-          <p className="text-sm font-semibold text-blue-900 mb-2">
-            📱 How to open in browser:
+        <div className="bg-blue-50 rounded-lg p-4 mb-6 border border-blue-200">
+          <p className="text-sm font-bold text-blue-900 mb-3">
+            📱 How to open in your browser:
           </p>
-          <ol className="text-sm text-blue-800 space-y-1.5">
-            <li className="flex items-start gap-2">
-              <span className="font-bold">1.</span>
-              <span>
-                Tap the menu button{" "}
-                <span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">
+          <div className="space-y-3 text-sm text-blue-800">
+            <div className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center font-bold text-blue-900">
+                1
+              </span>
+              <p>
+                Tap the <strong>menu button</strong>{" "}
+                <span className="inline-block px-2 py-0.5 bg-blue-200 rounded font-mono">
                   ⋯
                 </span>{" "}
                 or{" "}
-                <span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">
+                <span className="inline-block px-2 py-0.5 bg-blue-200 rounded font-mono">
                   ⋮
                 </span>{" "}
-                (usually top-right)
+                (usually in the top-right corner)
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center font-bold text-blue-900">
+                2
               </span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="font-bold">2.</span>
-              <span>
-                Select <strong>"Open in browser"</strong>,{" "}
-                <strong>"Open in Chrome"</strong>, or{" "}
-                <strong>"Open in Safari"</strong>
+              <p>
+                Look for and tap: <strong>"Open in browser"</strong>,{" "}
+                <strong>"Open in Chrome"</strong>,{" "}
+                <strong>"Open in Safari"</strong>, or{" "}
+                <strong>"Open externally"</strong>
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center font-bold text-blue-900">
+                3
               </span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="font-bold">3.</span>
-              <span>
-                Or use the <strong>"Copy URL"</strong> button below
-              </span>
-            </li>
-          </ol>
+              <p>
+                Or use the <strong>"Copy URL"</strong> button below and paste it
+                in any browser
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Buttons */}
+        {/* Action Buttons */}
         <div className="space-y-3">
           <button
             onClick={handleOpenInBrowser}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3.5 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+            className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-xl transition duration-200 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             <svg
-              className="w-5 h-5"
+              className="w-6 h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -239,16 +236,16 @@ export default function App() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
+                strokeWidth={2.5}
                 d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
               />
             </svg>
-            Open in External Browser
+            <span className="text-lg">Open in Real Browser</span>
           </button>
 
           <button
             onClick={handleCopyUrl}
-            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3.5 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2"
+            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-4 px-6 rounded-xl transition duration-200 flex items-center justify-center gap-3 border-2 border-gray-300"
           >
             <svg
               className="w-5 h-5"
@@ -263,31 +260,26 @@ export default function App() {
                 d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
               />
             </svg>
-            Copy URL
-          </button>
-
-          <button
-            onClick={handleContinueAnyway}
-            className="w-full bg-white hover:bg-gray-50 text-gray-600 font-medium py-3 px-4 rounded-lg transition duration-200 border border-gray-300"
-          >
-            Continue Here Anyway
+            Copy This Page URL
           </button>
         </div>
 
         {/* URL Display */}
-        <div className="mt-6 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-xs text-gray-500 mb-1.5 font-semibold">
-            🔗 Target URL:
+        <div className="mt-6 p-4 bg-gray-100 rounded-xl border-2 border-gray-300">
+          <p className="text-xs text-gray-600 mb-2 font-bold uppercase tracking-wide">
+            Current Page URL:
           </p>
-          <p className="text-sm text-gray-700 font-mono break-all leading-relaxed">
-            {targetUrl}
+          <p className="text-sm text-gray-800 font-mono break-all leading-relaxed bg-white p-3 rounded border border-gray-300">
+            {currentUrl}
           </p>
         </div>
 
-        {/* Footer note */}
-        <p className="text-xs text-gray-500 text-center mt-4">
-          Some features may not work properly in in-app browsers
-        </p>
+        {/* Footer Warning */}
+        <div className="mt-6 pt-4 border-t-2 border-gray-200">
+          <p className="text-xs text-red-600 font-semibold text-center">
+            ⚠️ This page will NOT work properly in this browser
+          </p>
+        </div>
       </div>
     </div>
   );

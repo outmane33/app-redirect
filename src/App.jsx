@@ -82,18 +82,18 @@ export default function App() {
     return "real-browser";
   }, []);
 
-  // If real browser and has target site, redirect immediately
-  if (browserType === "real-browser" && targetSite) {
-    window.location.replace(targetSite);
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-10 h-10 border-3 border-gray-300 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 text-sm">Redirecting to site...</p>
-        </div>
-      </div>
-    );
-  }
+  // TEMPORARILY DISABLED AUTO-REDIRECT FOR DEBUGGING
+  // if (browserType === 'real-browser' && targetSite) {
+  //   window.location.replace(targetSite);
+  //   return (
+  //     <div className="min-h-screen bg-white flex items-center justify-center">
+  //       <div className="text-center">
+  //         <div className="w-10 h-10 border-3 border-gray-300 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+  //         <p className="text-gray-600 text-sm">Redirecting to site...</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   const handleOpenInBrowser = () => {
     const url = currentUrl;
@@ -144,6 +144,29 @@ export default function App() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-6">
       <div className="max-w-md w-full">
+        {/* DEBUG BANNER - Shows for all browsers during testing */}
+        <div className="mb-6 bg-blue-100 border-2 border-blue-500 rounded-xl p-4">
+          <p className="text-sm font-bold text-blue-900 mb-2">
+            🔍 DEBUG MODE ACTIVE
+          </p>
+          <p className="text-xs text-blue-800">
+            Auto-redirect is disabled. Showing debug info for all browsers.
+          </p>
+        </div>
+
+        {/* Detection Result */}
+        <div className="mb-6 bg-gray-100 border border-gray-300 rounded-xl p-4">
+          <p className="text-sm font-semibold text-gray-900 mb-2">
+            Detection Result:
+          </p>
+          <p className="text-2xl font-bold text-gray-900">
+            {browserName} {browserType === "real-browser" ? "✅" : "⚠️"}
+          </p>
+          <p className="text-xs text-gray-600 mt-1">
+            Type: <span className="font-mono">{browserType}</span>
+          </p>
+        </div>
+
         {/* Icon */}
         <div className="flex justify-center mb-8">
           <div className="w-24 h-24 bg-red-100 rounded-2xl flex items-center justify-center">

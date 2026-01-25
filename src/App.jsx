@@ -3,7 +3,16 @@ import "./App.css";
 
 export default function App() {
   const currentUrl = window.location.href;
-  const targetSite = import.meta.env.VITE_SITE_URL;
+
+  // Extract query parameters from current URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const mediaParam = urlParams.get("media"); // Get ?media=avatar-2012
+
+  // Build target site URL with media parameter
+  const baseTargetSite = import.meta.env.VITE_SITE_URL;
+  const targetSite = mediaParam
+    ? `${baseTargetSite}/${mediaParam}`
+    : baseTargetSite;
 
   // Telegram Detection
   const isTelegramBrowser = useMemo(() => {

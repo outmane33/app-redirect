@@ -11,6 +11,17 @@ export default function App() {
     const standalone = window.navigator.standalone;
     const referrer = document.referrer;
 
+    // DEBUG: Show user agent to understand what we're detecting
+    console.log("=== BROWSER DETECTION DEBUG ===");
+    console.log("User Agent:", ua);
+    console.log("Referrer:", referrer);
+    console.log("Standalone:", standalone);
+    console.log("Window properties:", {
+      hasTelegram: !!window.Telegram,
+      hasTelegramWebApp: !!window.Telegram?.WebApp,
+      hasTelegramWebviewProxy: !!window.TelegramWebviewProxy,
+    });
+
     // Check 1: User Agent strings
     if (ua.includes("Telegram") || ua.includes("TelegramBot"))
       return "telegram";
@@ -122,6 +133,13 @@ export default function App() {
       line: "Line",
       "in-app": "In-App",
     }[browserType] || "In-App";
+
+  // DEBUG INFO for testing
+  const debugInfo = {
+    ua: navigator.userAgent,
+    detected: browserType,
+    referrer: document.referrer,
+  };
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-6">
@@ -236,6 +254,39 @@ export default function App() {
           <p className="text-xs text-gray-400 font-mono break-all text-center bg-gray-50 p-3 rounded-lg">
             {currentUrl}
           </p>
+
+          {/* DEBUG INFO */}
+          <details className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <summary className="text-xs font-semibold text-yellow-900 cursor-pointer">
+              🔧 Debug Info (tap to expand)
+            </summary>
+            <div className="mt-3 space-y-2">
+              <div>
+                <p className="text-xs font-semibold text-yellow-900">
+                  Detected Browser:
+                </p>
+                <p className="text-xs text-yellow-800 font-mono break-all">
+                  {debugInfo.detected}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-yellow-900">
+                  User Agent:
+                </p>
+                <p className="text-xs text-yellow-800 font-mono break-all">
+                  {debugInfo.ua}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-yellow-900">
+                  Referrer:
+                </p>
+                <p className="text-xs text-yellow-800 font-mono break-all">
+                  {debugInfo.referrer || "none"}
+                </p>
+              </div>
+            </div>
+          </details>
         </div>
       </div>
     </div>

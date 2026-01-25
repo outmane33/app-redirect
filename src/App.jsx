@@ -105,7 +105,7 @@ export default function App() {
             e.target.style.transform = "scale(1.05)";
           }}
         >
-          Continue
+          إضغط هنا للمتابعة
         </button>
       </div>
     </div>

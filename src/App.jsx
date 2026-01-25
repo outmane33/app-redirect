@@ -60,52 +60,15 @@ export default function App() {
     }, 600);
   };
 
-  // Simple interface
+  // Just button - nothing else
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-6">
-      <div className="max-w-md w-full text-center">
-        {/* Icon */}
-        <div className="flex justify-center mb-8">
-          <div className="w-24 h-24 bg-gray-900 rounded-3xl flex items-center justify-center">
-            <svg
-              className="w-12 h-12 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              />
-            </svg>
-          </div>
-        </div>
-
-        {/* Title */}
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Open in Browser
-        </h1>
-
-        {/* Description */}
-        <p className="text-lg text-gray-600 mb-12 leading-relaxed">
-          This website needs to open in your phone's browser to work properly.
-        </p>
-
-        {/* Big Continue Button */}
-        <button
-          onClick={handleContinue}
-          className="w-full bg-gray-900 hover:bg-gray-800 active:bg-black text-white text-xl font-bold py-6 px-8 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
-        >
-          Continue
-        </button>
-
-        {/* Small help text */}
-        <p className="text-sm text-gray-500 mt-8">
-          This will open the page in Chrome, Safari, or your default browser
-        </p>
-      </div>
+      <button
+        onClick={handleContinue}
+        className="bg-gray-900 hover:bg-gray-800 active:bg-black text-white text-2xl font-bold py-8 px-16 rounded-2xl transition-all duration-200 shadow-2xl hover:shadow-3xl transform hover:scale-105 active:scale-95"
+      >
+        Continue
+      </button>
     </div>
   );
 }

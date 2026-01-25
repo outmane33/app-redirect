@@ -62,13 +62,43 @@ export default function App() {
 
   // Just button - nothing else
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-6">
-      <button
-        onClick={handleContinue}
-        className="bg-gray-900 hover:bg-gray-800 active:bg-black text-white text-2xl font-bold py-8 px-16 rounded-2xl transition-all duration-200 shadow-2xl hover:shadow-3xl transform hover:scale-105 active:scale-95"
-      >
-        Continue
-      </button>
+    <div className="app-container">
+      <div className="content-wrapper">
+        <button
+          onClick={handleContinue}
+          style={{
+            backgroundColor: "#111827",
+            color: "white",
+            fontSize: "24px",
+            fontWeight: "bold",
+            padding: "32px 64px",
+            borderRadius: "16px",
+            border: "none",
+            cursor: "pointer",
+            boxShadow:
+              "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+            transition: "all 0.2s ease",
+          }}
+          onMouseOver={(e) => {
+            e.target.style.backgroundColor = "#1f2937";
+            e.target.style.transform = "scale(1.05)";
+          }}
+          onMouseOut={(e) => {
+            e.target.style.backgroundColor = "#111827";
+            e.target.style.transform = "scale(1)";
+          }}
+          onMouseDown={(e) => {
+            e.target.style.backgroundColor = "#000000";
+            e.target.style.transform = "scale(0.95)";
+          }}
+          onMouseUp={(e) => {
+            e.target.style.backgroundColor = "#1f2937";
+            e.target.style.transform = "scale(1.05)";
+          }}
+        >
+          Continue
+        </button>
+      </div>
     </div>
   );
 }

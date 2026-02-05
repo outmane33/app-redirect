@@ -54,19 +54,19 @@ export default function App() {
           aria-label="فتح الموقع في المتصفح الخارجي"
           className="main-button"
         >
-          إضغط هنا للمتابعة
+          اضغط هنا للمتابعة
         </button>
 
         {isTelegramBrowser && (
           <div className="instructions-section">
-            <p className="instruction-title">كيفاش تفتح الموقع في المتصفح:</p>
+            <p className="instruction-title">كيفية فتح الموقع في المتصفح:</p>
 
             {/* الصور التوضيحية */}
             <div className="tutorial-images">
               <div className="tutorial-step">
                 <img
                   src="/step1.jpg"
-                  alt="الخطوة 1: اضغط على النقاط الثلاث"
+                  alt="الخطوة الأولى: اضغط على النقاط الثلاث"
                   className="tutorial-image"
                 />
                 <p className="step-description">1️⃣ اضغط على "⋯" أعلى الصفحة</p>
@@ -75,7 +75,7 @@ export default function App() {
               <div className="tutorial-step">
                 <img
                   src="/step2.jpg"
-                  alt="الخطوة 2: اختر فتح في المتصفح"
+                  alt="الخطوة الثانية: اختر فتح في المتصفح"
                   className="tutorial-image"
                 />
                 <p className="step-description">
@@ -85,7 +85,7 @@ export default function App() {
             </div>
 
             <p className="fallback-text">
-              بعد ما تفتح في المتصفح، غادي يخدم الموقع بشكل عادي 🎯
+              بعد فتح الرابط في المتصفح، سيعمل الموقع بشكل طبيعي ✅
             </p>
           </div>
         )}

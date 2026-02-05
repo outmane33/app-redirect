@@ -1,7 +1,9 @@
-import { useMemo, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import "./App.css";
 
 export default function App() {
+  const [showInstructions, setShowInstructions] = useState(false);
+
   // Extract query parameters from current URL
   const urlParams = new URLSearchParams(window.location.search);
   const mediaParam = urlParams.get("media");
@@ -46,11 +48,15 @@ export default function App() {
     // Android: يفتح popup لاختيار المتصفح
     if (/android/i.test(navigator.userAgent)) {
       window.location.href = `intent://${url.replace(/^https?:\/\//, "")}#Intent;scheme=https;action=android.intent.action.VIEW;end`;
-      return;
+    } else {
+      // iOS/Desktop: window.open
+      window.open(url, "_blank", "noopener,noreferrer");
     }
 
-    // iOS/Desktop: window.open غير
-    window.open(url, "_blank", "noopener,noreferrer");
+    // بعد 2 ثانية، نعرض التعليمات إذا المستخدم لسا موجود
+    setTimeout(() => {
+      setShowInstructions(true);
+    }, 2000);
   };
 
   // Loading state during redirect
@@ -65,16 +71,28 @@ export default function App() {
   return (
     <div className="app-container">
       <div className="content-wrapper">
-        <button
-          onClick={handleContinue}
-          aria-label="فتح الموقع في المتصفح الخارجي"
-          className="main-button"
-        >
-          اضغط هنا للمتابعة
-        </button>
-
-        {isTelegramBrowser && (
+        {!showInstructions ? (
+          // الزر الأولي
+          <div className="button-section">
+            <button
+              onClick={handleContinue}
+              aria-label="فتح الموقع في المتصفح الخارجي"
+              className="main-button"
+            >
+              اضغط هنا للمتابعة
+            </button>
+            <p className="hint-text">انقر للوصول إلى المحتوى</p>
+          </div>
+        ) : (
+          // التعليمات بعد الضغط
           <div className="instructions-section">
+            <div className="alert-box">
+              <span className="alert-icon">⚠️</span>
+              <p className="alert-text">
+                لم يتم فتح الرابط؟ اتبع الخطوات التالية:
+              </p>
+            </div>
+
             <p className="instruction-title">كيفية فتح الموقع في المتصفح:</p>
 
             {/* الصور التوضيحية */}
@@ -100,9 +118,16 @@ export default function App() {
               </div>
             </div>
 
-            <p className="fallback-text">
-              بعد فتح الرابط في المتصفح، سيعمل الموقع بشكل طبيعي ✅
-            </p>
+            <div className="info-box">
+              <p className="info-text">
+                📱 بعد فتح الرابط في المتصفح، سيعمل الموقع بشكل طبيعي
+              </p>
+            </div>
+
+            {/* زر إعادة المحاولة */}
+            <button onClick={handleContinue} className="retry-button">
+              إعادة المحاولة
+            </button>
           </div>
         )}
       </div>

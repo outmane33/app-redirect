@@ -36,26 +36,19 @@ export default function App() {
   const handleContinue = () => {
     const url = targetSite;
 
-    // 1. Try window.open first
-    const newWindow = window.open(url, "_blank", "noopener,noreferrer");
+    // Android: يفتح popup لاختيار المتصفح
+    if (/android/i.test(navigator.userAgent)) {
+      window.location.href = `intent://${url.replace(/^https?:\/\//, "")}#Intent;scheme=https;action=android.intent.action.VIEW;end`;
+      return;
+    }
 
-    // 2. Android intent fallback
-    setTimeout(() => {
-      if (!newWindow || newWindow.closed) {
-        window.location.href = `intent://${url.replace(/^https?:\/\//, "")}#Intent;scheme=https;action=android.intent.action.VIEW;end`;
-      }
-    }, 500);
-
-    // 3. Direct navigation fallback (last resort)
-    setTimeout(() => {
-      window.location.href = url;
-    }, 1000);
+    // iOS/Desktop: window.open غير
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   return (
     <div className="app-container">
       <div className="content-wrapper">
-        {/* عرض الزر ديما - سواء Telegram أو لا */}
         <button
           onClick={handleContinue}
           aria-label="فتح الموقع في المتصفح الخارجي"
@@ -64,7 +57,6 @@ export default function App() {
           إضغط هنا للمتابعة
         </button>
 
-        {/* Fallback text فقط للي في Telegram */}
         {isTelegramBrowser && (
           <p className="fallback-text">
             إذا لم يفتح الموقع، انقر على "⋯" أعلى الصفحة واختر "فتح في المتصفح"

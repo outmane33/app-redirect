@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import "./App.css";
 
 export default function App() {
@@ -33,6 +33,13 @@ export default function App() {
     return missingFeatures >= 2;
   }, []);
 
+  // Auto-redirect inside useEffect
+  useEffect(() => {
+    if (!isTelegramBrowser && targetSite) {
+      window.location.href = targetSite;
+    }
+  }, [isTelegramBrowser, targetSite]);
+
   const handleContinue = () => {
     const url = targetSite;
 
@@ -45,6 +52,15 @@ export default function App() {
     // iOS/Desktop: window.open غير
     window.open(url, "_blank", "noopener,noreferrer");
   };
+
+  // Loading state during redirect
+  if (!isTelegramBrowser && targetSite) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="app-container">

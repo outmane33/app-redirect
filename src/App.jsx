@@ -2,8 +2,6 @@ import { useMemo } from "react";
 import "./App.css";
 
 export default function App() {
-  const currentUrl = window.location.href;
-
   // Extract query parameters from current URL
   const urlParams = new URLSearchParams(window.location.search);
   const mediaParam = urlParams.get("media"); // Get ?media=avatar-2012
@@ -53,7 +51,7 @@ export default function App() {
   }
 
   const handleContinue = () => {
-    const url = currentUrl;
+    const url = targetSite;
 
     // Try to open in external browser
     window.open(url, "_blank", "noopener,noreferrer");

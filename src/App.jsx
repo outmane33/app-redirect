@@ -12,16 +12,14 @@ export default function App() {
     ? `${baseTargetSite}/${mediaParam}`
     : baseTargetSite;
 
-  // Telegram Detection (مبسطة)
+  // Telegram Detection
   const isTelegramBrowser = useMemo(() => {
     const ua = navigator.userAgent.toLowerCase();
 
-    // Direct detection (كافية لـ 95% من الحالات)
     if (ua.includes("telegram")) return true;
     if (typeof window.Telegram !== "undefined") return true;
     if (typeof window.TelegramWebviewProxy !== "undefined") return true;
 
-    // Fallback: feature detection للباقي
     const hasServiceWorker = "serviceWorker" in navigator;
     const hasNotifications = "Notification" in window;
     const hasPushManager = "PushManager" in window;
@@ -35,31 +33,20 @@ export default function App() {
     return missingFeatures >= 2;
   }, []);
 
-  // Auto-redirect if real browser
-  if (!isTelegramBrowser && targetSite) {
-    window.location.href = targetSite; // بدل replace باش back button يخدم
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
   const handleContinue = () => {
-    // Try multiple methods
     const url = targetSite;
 
-    // 1. Standard window.open
+    // 1. Try window.open first
     const newWindow = window.open(url, "_blank", "noopener,noreferrer");
 
-    // 2. Android intent (after delay)
+    // 2. Android intent fallback
     setTimeout(() => {
       if (!newWindow || newWindow.closed) {
         window.location.href = `intent://${url.replace(/^https?:\/\//, "")}#Intent;scheme=https;action=android.intent.action.VIEW;end`;
       }
     }, 500);
 
-    // 3. iOS Safari fallback
+    // 3. Direct navigation fallback (last resort)
     setTimeout(() => {
       window.location.href = url;
     }, 1000);
@@ -68,7 +55,7 @@ export default function App() {
   return (
     <div className="app-container">
       <div className="content-wrapper">
-        {/* الزر الرئيسي */}
+        {/* عرض الزر ديما - سواء Telegram أو لا */}
         <button
           onClick={handleContinue}
           aria-label="فتح الموقع في المتصفح الخارجي"
@@ -77,10 +64,12 @@ export default function App() {
           إضغط هنا للمتابعة
         </button>
 
-        {/* Fallback text للي ما خدمش عندهم */}
-        <p className="fallback-text">
-          إذا لم يفتح الموقع، انقر على "⋯" أعلى الصفحة واختر "فتح في المتصفح"
-        </p>
+        {/* Fallback text فقط للي في Telegram */}
+        {isTelegramBrowser && (
+          <p className="fallback-text">
+            إذا لم يفتح الموقع، انقر على "⋯" أعلى الصفحة واختر "فتح في المتصفح"
+          </p>
+        )}
       </div>
     </div>
   );

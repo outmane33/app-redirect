@@ -15,7 +15,7 @@
 .main-button {
   background-color: #111827;
   color: white;
-  font-size: clamp(18px, 5vw, 24px); /* responsive */
+  font-size: clamp(18px, 5vw, 24px);
   font-weight: bold;
   padding: 32px 64px;
   border-radius: 16px;
@@ -47,7 +47,6 @@
   padding: 0 20px;
 }
 
-/* Mobile optimization */
 @media (max-width: 640px) {
   .main-button {
     padding: 24px 48px;

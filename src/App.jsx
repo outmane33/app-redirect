@@ -58,9 +58,36 @@ export default function App() {
         </button>
 
         {isTelegramBrowser && (
-          <p className="fallback-text">
-            إذا لم يفتح الموقع، انقر على "⋯" أعلى الصفحة واختر "فتح في المتصفح"
-          </p>
+          <div className="instructions-section">
+            <p className="instruction-title">كيفاش تفتح الموقع في المتصفح:</p>
+
+            {/* الصور التوضيحية */}
+            <div className="tutorial-images">
+              <div className="tutorial-step">
+                <img
+                  src="/step1.jpg"
+                  alt="الخطوة 1: اضغط على النقاط الثلاث"
+                  className="tutorial-image"
+                />
+                <p className="step-description">1️⃣ اضغط على "⋯" أعلى الصفحة</p>
+              </div>
+
+              <div className="tutorial-step">
+                <img
+                  src="/step2.jpg"
+                  alt="الخطوة 2: اختر فتح في المتصفح"
+                  className="tutorial-image"
+                />
+                <p className="step-description">
+                  2️⃣ اختر "فتح في المتصفح" أو "Open in Browser"
+                </p>
+              </div>
+            </div>
+
+            <p className="fallback-text">
+              بعد ما تفتح في المتصفح، غادي يخدم الموقع بشكل عادي 🎯
+            </p>
+          </div>
         )}
       </div>
     </div>
